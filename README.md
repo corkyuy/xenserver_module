@@ -1,9 +1,11 @@
 # XenServer 7.0 Ansible
 
-## module: xen_stat
+## module: xen_control
 
 ## Example
-- xen_stat: vm=VirtualMachineName
+'''
+- xen_control: vm=VirtualMachineName
   register: st
 - fail: msg="Exepected to be 'Running'"
-  when: st.xen_stat.power_state != 'Running'
+  when: st.xen_control.power_state != 'Running'
+'''
