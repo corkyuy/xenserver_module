@@ -2,31 +2,34 @@
 
 DOCUMENTATION = '''
 ---
-module: xen_stat
+module: xen_control
 version_added: "1.0"
-short_description: retrieve xenserver information
+short_description: control a xenserver 7.0
 description:
-     - Retrieves facts for a xenserver
+     - Control a xenserver 7.0
 options:
   vm:
     description:
-      - Name of VM
+      - Name of the virtual machine
     required: true
     default: null
+  power_state:
+    description:
+      - Power states: Running, Halted, [Paused, Suspended]
 author: "Corky Uy (@corkyuy)"
 '''
 
 EXAMPLES = '''
-# Obtain the stats of /etc/foo.conf, and check that the file still belongs
-# to 'root'. Fail otherwise.
-- xen_stat: vm=Test
+# Check if the virtual machine is running
+- xen_control: vm=Test
   register: st
 - fail: msg="Whoops! file ownership has changed"
-  when: st.xen_stat.status != 'Running'
+  when: st.xen_control.power_status != 'Running'
 '''
 
 RETURN = '''
-xen_stat:
+xen_control:
+  power_status
 '''
 
 import platform
@@ -57,14 +60,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             vm=dict(required=True, type='str'),
-            state=dict(required=False, type='str'),
-            follow=dict(default='no', type='bool'),
-            get_md5=dict(default='yes', type='bool'),
-            get_checksum=dict(default='yes', type='bool'),
-            checksum_algorithm=dict(default='sha1', type='str',
-                                    choices=['sha1', 'sha224', 'sha256', 'sha384', 'sha512'],
-                                    aliases=['checksum_algo', 'checksum']),
-            mime=dict(default=False, type='bool', aliases=['mime_type', 'mime-type']),
+            power_state=dict(required=False, type='str'),
         ),
         supports_check_mode=True
     )
@@ -78,7 +74,7 @@ def main():
         module.fail_json(msg='%s' % e)
 
     name = module.params.get('vm')
-    state = module.params.get('state')
+    state = module.params.get('power_state')
 
     vm = session.xenapi.VM.get_by_name_label(name)[0]
 
@@ -105,7 +101,7 @@ def main():
         'name':name,
         'power_state':str(curr_power_state),
         }
-    module.exit_json(changed=change, failed=failed, xen_stat=output)
+    module.exit_json(changed=change, failed=failed, xen_control=output)
 
 if __name__ == '__main__':
     main()
