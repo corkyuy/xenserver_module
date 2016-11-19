@@ -59,7 +59,7 @@ def vm_shutdown(session, xs_vm):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            vm=dict(required=True, type='str'),
+            name=dict(required=True, type='str'),
             power_state=dict(required=False, type='str'),
         ),
         supports_check_mode=True
@@ -73,7 +73,7 @@ def main():
     except XenAPI.Failure as e:
         module.fail_json(msg='%s' % e)
 
-    name = module.params.get('vm')
+    name = module.params.get('name')
     state = module.params.get('power_state')
 
     vm = session.xenapi.VM.get_by_name_label(name)[0]
